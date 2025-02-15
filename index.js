@@ -1,5 +1,4 @@
-import { dates } from '/utils/dates'
-import OpenAI from "openai"
+import { dates } from "./utils/dates"
 
 const tickersArr = []
 
@@ -56,7 +55,7 @@ async function fetchStockData() {
         fetchReport(stockData.join(''))
     } catch (err) {
         loadingArea.innerText = 'There was an error fetching stock data.'
-        console.error('error: ', err)
+        console.error(err.message)
     }
 }
 
@@ -77,22 +76,23 @@ async function fetchReport(data) {
             `
         }
     ]
-
+    
     try {
-        const openai = new OpenAI({
-            dangerouslyAllowBrowser: true
-        })
-        const response = await openai.chat.completions.create({
-            model: 'gpt-4',
-            messages: messages,
-            temperature: 1.1,
-            presence_penalty: 0,
-            frequency_penalty: 0
-        })
-        renderReport(response.choices[0].message.content)
+        const url = 'https://openai-api-worker.guil-9d2.workers.dev'
+        
 
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(messages)
+        })
+        const data = await response.json()
+        console.log(data)
+        renderReport(data.content)
     } catch (err) {
-        console.log('Error:', err)
+        console.error(err.message)
         loadingArea.innerText = 'Unable to access AI. Please refresh and try again'
     }
 }

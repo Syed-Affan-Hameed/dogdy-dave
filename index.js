@@ -1,4 +1,21 @@
-import { dates } from "./utils/dates"
+
+function formatDate(date) {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+}
+
+function getDateNDaysAgo(n) {
+    const now = new Date(); // current date and time
+    now.setDate(now.getDate() - n); // subtract n days
+    return formatDate(now);
+}
+
+const dates = {
+    startDate: getDateNDaysAgo(3), // alter days to increase/decrease data set
+    endDate: getDateNDaysAgo(1) // leave at 1 to get yesterday's data
+}
 
 const tickersArr = []
 
@@ -41,13 +58,15 @@ async function fetchStockData() {
     loadingArea.style.display = 'flex'
     try {
         const stockData = await Promise.all(tickersArr.map(async (ticker) => {
-            const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${dates.startDate}/${dates.endDate}?apiKey=${process.env.POLYGON_API_KEY}`
+            const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${dates.startDate}/${dates.endDate}?apiKey=RVjGOWGnLQisYHQgObCCzDt67a3L4SYG`
             const response = await fetch(url)
-            const data = await response.text()
+            const data = await response.json()
             const status = await response.status
             if (status === 200) {
                 apiMessage.innerText = 'Creating report...'
-                return data
+                
+                delete data.request_id
+                return JSON.stringify(data);
             } else {
                 loadingArea.innerText = 'There was an error fetching stock data.'
             }
@@ -79,9 +98,9 @@ async function fetchReport(data) {
     
     try {
         const url = 'https://openai-api-worker.guil-9d2.workers.dev'
-        
+        const url2 = 'https://openai-api-worker.syedaffanhameed.workers.dev'
 
-        const response = await fetch(url, {
+        const response = await fetch(url2, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
